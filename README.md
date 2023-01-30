@@ -1,7 +1,6 @@
 # st-transcriptifier
-youtube transcripts
 
-# Youtube Transcript Downloader
+## Youtube Transcript Downloader
 
 A Streamlit application that allows users to easily download transcripts from any YouTube video. Simply enter the video URL, and the transcript will be generated and available for download in a .txt or .srt file format with timestamps.
 
