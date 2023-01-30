@@ -1,0 +1,2 @@
+# st-transcriptifier
+youtube transcripts
