@@ -1,14 +1,16 @@
+from fastapi import FastAPI, Body
 import streamlit as st
-import youtube_transcript_api
 
-st.title("Youtube Transcript Downloader")
+app = FastAPI()
 
-url = st.text_input("Enter the YouTube video URL:")
+@app.post("/letter_count")
+async def letter_count(text: str = Body(..., embed=True)):
+    return {"letter_count": len(text)}
 
-if url:
-    try:
-        transcript = youtube_transcript_api.get_transcript(url)
-        transcript = [f"{row['start']} - {row['text']}" for row in transcript]
-        st.write("\n".join(transcript))
-    except Exception as e:
-        st.write("Error:", e)
+st.title("Letter Counter")
+
+text = st.text_input("Enter text")
+if text:
+    result = len(text)
+    st.write("Number of letters: ", result)
+

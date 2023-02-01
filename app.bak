@@ -1,0 +1,24 @@
+import streamlit as st
+import youtube_transcript_api
+
+st.title("Youtube Transcript Downloader")
+
+example_urls = [
+    "https://www.youtube.com/watch?v=8uQDDUfGNPA",
+    "https://www.youtube.com/watch?v=n8JHnLgodRI"
+]
+
+url = st.text_input("Enter the YouTube video URL:", value=example_urls[0])
+
+if url:
+    try:
+        transcript = youtube_transcript_api.get_transcript(url)
+        transcript = [f"{row['start']} - {row['text']}" for row in transcript]
+        st.write("\n".join(transcript))
+    except Exception as e:
+        st.write("Error:", e)
+
+st.write("Example URLs:")
+for i, example_url in enumerate(example_urls):
+    st.write(f"{i + 1}. {example_url}")
+
