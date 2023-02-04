@@ -61,7 +61,7 @@ df = pd.DataFrame(data)
 df.set_index('Video ID', inplace=True)
 st.table(df)
 yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
-st.image(yt_img)
+st.markdown("[![Image_with_Link]("+yt_img+")]("+url+")")
 
 with st.expander('Preview Transcript'):
     st.code(transcript_text, language=None)
