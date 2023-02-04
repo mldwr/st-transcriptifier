@@ -1,5 +1,7 @@
 # st-transcriptifier
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/streamlit/transcriptifier/)
+
 ## Youtube Transcript Downloader
 
 A Streamlit application that allows users to easily download transcripts from any YouTube video. Simply enter the video URL, and the transcript will be generated and available for download in a .txt format.
