@@ -63,7 +63,6 @@ st.table(df)
 yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 st.image(yt_img)
 
-
 with st.expander('Preview Transcript'):
     st.code(transcript_text, language=None)
 st.download_button('Download Transcript', transcript_text)
