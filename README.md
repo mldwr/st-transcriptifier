@@ -1,6 +1,6 @@
 # st-transcriptifier
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/streamlit/transcriptifier/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://transcriptifier.streamlit.app/)
 
 ## Youtube Transcript Downloader
 
