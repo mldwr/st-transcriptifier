@@ -2,16 +2,18 @@
 
 ## Youtube Transcript Downloader
 
-A Streamlit application that allows users to easily download transcripts from any YouTube video. Simply enter the video URL, and the transcript will be generated and available for download in a .txt or .srt file format with timestamps.
+A Streamlit application that allows users to easily download transcripts from any YouTube video. Simply enter the video URL, and the transcript will be generated and available for download in a .txt format.
 
 ## Features
 - User-friendly interface built with Streamlit
 - Fast and efficient transcript generation from YouTube videos
-- Downloadable transcript in .txt or .srt file format with timestamps
+- Downloadable transcript in .txt format
 
 ## Requirements
 - Streamlit
 - YouTube-Transcript-API
+- Pandas
+- PyTube
 
 ## Getting Started
 1. Clone the repository
