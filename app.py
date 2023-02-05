@@ -5,12 +5,8 @@ from pytube import YouTube
 import pandas as pd
 
 def update_param():
-    #vid = get_id_from_link("".join(vid_param)) 
     video_id = get_id_from_link(st.session_state.s_vid) 
     st.experimental_set_query_params(vid=video_id)
-    #st.experimental_set_query_params(vid=st.session_state.s_vid)
-    #st.code('vid: '+st.session_state.s_vid)
-    st.code('update_param: '+video_id)
 
 def get_link_from_id(video_id):
     if "v=" not in video_id:
