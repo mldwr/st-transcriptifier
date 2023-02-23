@@ -60,7 +60,8 @@ pa_url=None
 if vid_param and vid_param != st.session_state.s_vid:
     pa_url = get_link_from_id("".join(vid_param))
     st.session_state.s_vid = pa_url
-    example_urls.append(pa_url)
+    if pa_url not in example_urls:
+        example_urls.append(pa_url)
 
 select_examples = st.selectbox(label="Choose an example",options=example_urls, key='s_vid', on_change=update_param)
 url = st.text_input("Enter the YouTube video URL:", value=pa_url if pa_url else select_examples)
