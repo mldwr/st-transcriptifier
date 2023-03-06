@@ -2,6 +2,7 @@ from youtube_transcript_api import YouTubeTranscriptApi as yta
 from youtube_transcript_api import NoTranscriptFound, TranscriptsDisabled
 import streamlit as st
 from pytube import YouTube
+from pytube import Channel
 import pandas as pd
 
 def update_param():
@@ -88,12 +89,21 @@ if url:
 # PytubeError: Exception while accessing title of https://youtube.com/watch?v=bj9snrsSook. Please file a bug report at https://github.com/pytube/pytube
 
 yt = YouTube(get_link_from_id(url))
+
+channel_url = "https://youtube.com/c/"
+ytc = Channel(url+yt.channel_url)
+
 data = {'Video ID': [video_id],
-        'Author': [yt.author], 
+        'Author': [yt.author],
         'Title': [yt.title]}
 df = pd.DataFrame(data)
-df.set_index('Video ID', inplace=True)
-st.table(df)
+st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+st.write("")
+
+df = pd.DataFrame(yt.keywords, columns=['Authors Keywords'])
+st.write(df)
+
+
 yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 st.markdown("[![Image_with_Link]("+yt_img+")]("+url+")")
 
@@ -101,5 +111,19 @@ with st.expander('Preview Transcript'):
     st.code(transcript_text, language=None)
 st.download_button('Download Transcript', transcript_text)
 
+########################
+# Channel
 
+
+
+###############
+# End of File #
+###############
+hide_streamlit_style = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
