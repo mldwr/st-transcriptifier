@@ -90,22 +90,22 @@ if url:
 
 yt = YouTube(get_link_from_id(url))
 
-channel_url = "https://youtube.com/c/"
-ytc = Channel(url+yt.channel_url)
 
-data = {'Video ID': [video_id],
+yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
+#yt_img_markdown ="[![Image_with_Link]("+yt_img+")]("+url+")"
+yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
+
+data = {'Thumbnail':[yt_img_html],
         'Author': [yt.author],
-        'Title': [yt.title]}
+        'Title': [yt.title],
+        'Views':[yt.views]}
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 st.write("")
 
+
 df = pd.DataFrame(yt.keywords, columns=['Authors Keywords'])
 st.write(df)
-
-
-yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
-st.markdown("[![Image_with_Link]("+yt_img+")]("+url+")")
 
 with st.expander('Preview Transcript'):
     st.code(transcript_text, language=None)
@@ -114,6 +114,84 @@ st.download_button('Download Transcript', transcript_text)
 ########################
 # Channel
 
+
+st.subheader("Other Videos of the Channel")
+
+import scrapetube
+
+#@st.cache_data(show_spinner=False)
+def split_frame(input_df, rows):
+    df = [input_df.loc[i : i + rows - 1, :] for i in range(0, len(input_df), rows)]
+    return df
+
+ytc = Channel(yt.channel_url)
+
+videos = scrapetube.get_channel(yt.channel_id)
+#st.dataframe(videos)
+
+vids_thumbnails = []
+vids_videoIds = []
+vids_titles = []
+vids_lengths = []
+vids_published= []
+vids_views= []
+for video in videos:
+  vids_video_id = video['videoId']
+  yt_img = f'http://img.youtube.com/vi/{vids_video_id}/mqdefault.jpg'
+  yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
+  vids_thumbnails.append(yt_img_html)
+  vids_videoIds.append(vids_video_id)
+  dict_string = video['title']
+  title_value = dict_string["runs"][0]["text"]
+  vids_titles.append(title_value)
+  vids_lengths.append(video['lengthText']['simpleText'])
+  vids_published.append(video['publishedTimeText']['simpleText'])
+  vids_views.append(video['viewCountText']['simpleText'])
+
+df_videos = {'thumbnail': vids_thumbnails,
+            'videoId':vids_videoIds,
+             'title':vids_titles,
+             'length':vids_lengths,
+             'published':vids_published,
+             'views':vids_views}
+
+st.write('Number of videos:',len(vids_videoIds))
+#st.table(df_videos)
+
+dataset = pd.DataFrame(df_videos)
+st.markdown(dataset.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+
+# top_menu = st.columns(3)
+# with top_menu[0]:
+#     sort = st.radio("Sort Data", options=["Yes", "No"], horizontal=1, index=1)
+# if sort == "Yes":
+#     with top_menu[1]:
+#         sort_field = st.selectbox("Sort By", options=dataset.columns)
+#     with top_menu[2]:
+#         sort_direction = st.radio(
+#             "Direction", options=["⬆️", "⬇️"], horizontal=True
+#         )
+#     dataset = dataset.sort_values(
+#         by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True
+#     )
+# pagination = st.container()
+
+# bottom_menu = st.columns((4, 1, 1))
+# with bottom_menu[2]:
+#     batch_size = st.selectbox("Page Size", options=[10, 25, 50, 100])
+# with bottom_menu[1]:
+#     total_pages = (
+#         int(len(dataset) / batch_size) if int(len(dataset) / batch_size) > 0 else 1
+#     )
+#     current_page = st.number_input(
+#         "Page", min_value=1, max_value=total_pages, step=1
+#     )
+# with bottom_menu[0]:
+#     st.markdown(f"Page **{current_page}** of **{total_pages}** ")
+
+# pages = split_frame(dataset, batch_size)
+# pagination.table(data=pages[current_page - 1])
+# #pagination.dataframe(data=pages[current_page - 1], use_container_width=True)
 
 
 ###############
