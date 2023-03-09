@@ -94,8 +94,9 @@ yt = YouTube(get_link_from_id(url))
 yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 #yt_img_markdown ="[![Image_with_Link]("+yt_img+")]("+url+")"
 yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
+yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
 
-data = {'Thumbnail':[yt_img_html],
+data = {'Thumbnail':[yt_img_html_link],
         'Author': [yt.author],
         'Title': [yt.title],
         'Views':[yt.views]}
@@ -137,10 +138,15 @@ vids_published= []
 vids_views= []
 for video in videos:
   vids_video_id = video['videoId']
+  
   yt_img = f'http://img.youtube.com/vi/{vids_video_id}/mqdefault.jpg'
   yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
-  vids_thumbnails.append(yt_img_html)
-  vids_videoIds.append(vids_video_id)
+  yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
+  vids_thumbnails.append(yt_img_html_link)
+  
+  vids_video_id_link = '<a target="_self" href="/?vid='+vids_video_id+'">'+vids_video_id+'</a>'
+  vids_videoIds.append(vids_video_id_link)
+
   dict_string = video['title']
   title_value = dict_string["runs"][0]["text"]
   vids_titles.append(title_value)
