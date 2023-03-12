@@ -4,6 +4,7 @@ import streamlit as st
 from pytube import YouTube
 from pytube import Channel
 import pandas as pd
+import scrapetube
 
 def update_param():
     video_id = get_id_from_link(st.session_state.s_vid) 
@@ -118,7 +119,6 @@ st.download_button('Download Transcript', transcript_text)
 
 st.subheader("Other Videos of the Channel")
 
-import scrapetube
 
 #@st.cache_data(show_spinner=False)
 def split_frame(input_df, rows):
