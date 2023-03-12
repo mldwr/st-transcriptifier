@@ -97,9 +97,10 @@ yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
 yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
 
-data = {'Thumbnail':[yt_img_html_link],
+data = {'Video':[yt_img_html_link],
         'Author': [yt.author],
         'Title': [yt.title],
+        'Published': [yt.publish_date],
         'Views':[yt.views]}
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
@@ -158,7 +159,7 @@ df_videos = {'Video': vids_thumbnails,
             'Transcript':vids_videoIds,
              'Title':vids_titles,
              'Length':vids_lengths,
-             'Day Published':vids_published,
+             'Published':vids_published,
              'Views':vids_views}
 
 st.write('Number of videos:',len(vids_videoIds))
