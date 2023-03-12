@@ -154,12 +154,12 @@ for video in videos:
   vids_published.append(video['publishedTimeText']['simpleText'])
   vids_views.append(video['viewCountText']['simpleText'])
 
-df_videos = {'thumbnail': vids_thumbnails,
-            'videoId':vids_videoIds,
-             'title':vids_titles,
-             'length':vids_lengths,
-             'published':vids_published,
-             'views':vids_views}
+df_videos = {'Video': vids_thumbnails,
+            'Transcript':vids_videoIds,
+             'Title':vids_titles,
+             'Length':vids_lengths,
+             'Day Published':vids_published,
+             'Views':vids_views}
 
 st.write('Number of videos:',len(vids_videoIds))
 #st.table(df_videos)
