@@ -126,79 +126,49 @@ def split_frame(input_df, rows):
     df = [input_df.loc[i : i + rows - 1, :] for i in range(0, len(input_df), rows)]
     return df
 
-ytc = Channel(yt.channel_url)
 
-videos = scrapetube.get_channel(yt.channel_id)
-#st.dataframe(videos)
+if st.button('Load all Videos'):
+    ytc = Channel(yt.channel_url)
 
-vids_thumbnails = []
-vids_videoIds = []
-vids_titles = []
-vids_lengths = []
-vids_published= []
-vids_views= []
-for video in videos:
-  vids_video_id = video['videoId']
-  
-  yt_img = f'http://img.youtube.com/vi/{vids_video_id}/mqdefault.jpg'
-  yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
-  yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
-  vids_thumbnails.append(yt_img_html_link)
-  
-  vids_video_id_link = '<a target="_self" href="/?vid='+vids_video_id+'">'+vids_video_id+'</a>'
-  vids_videoIds.append(vids_video_id_link)
+    videos = scrapetube.get_channel(yt.channel_id)
 
-  dict_string = video['title']
-  title_value = dict_string["runs"][0]["text"]
-  vids_titles.append(title_value)
-  vids_lengths.append(video['lengthText']['simpleText'])
-  vids_published.append(video['publishedTimeText']['simpleText'])
-  vids_views.append(video['viewCountText']['simpleText'])
+    vids_thumbnails = []
+    vids_videoIds = []
+    vids_titles = []
+    vids_lengths = []
+    vids_published= []
+    vids_views= []
+    for video in videos:
+        vids_video_id = video['videoId']
+        
+        yt_img = f'http://img.youtube.com/vi/{vids_video_id}/mqdefault.jpg'
+        yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
+        yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
+        vids_thumbnails.append(yt_img_html_link)
+        
+        vids_video_id_link = '<a target="_self" href="/?vid='+vids_video_id+'">'+vids_video_id+'</a>'
+        vids_videoIds.append(vids_video_id_link)
 
-df_videos = {'Video': vids_thumbnails,
-            'Transcript':vids_videoIds,
-             'Title':vids_titles,
-             'Length':vids_lengths,
-             'Published':vids_published,
-             'Views':vids_views}
+        dict_string = video['title']
+        title_value = dict_string["runs"][0]["text"]
+        vids_titles.append(title_value)
+        vids_lengths.append(video['lengthText']['simpleText'])
+        vids_published.append(video['publishedTimeText']['simpleText'])
+        vids_views.append(video['viewCountText']['simpleText'])
 
-st.write('Number of videos:',len(vids_videoIds))
-#st.table(df_videos)
+    df_videos = {'Video': vids_thumbnails,
+                'Transcript':vids_videoIds,
+                'Title':vids_titles,
+                'Length':vids_lengths,
+                'Published':vids_published,
+                'Views':vids_views}
 
-dataset = pd.DataFrame(df_videos)
-st.markdown(dataset.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+    st.write('Number of videos:',len(vids_videoIds))
+    #st.table(df_videos)
 
-# top_menu = st.columns(3)
-# with top_menu[0]:
-#     sort = st.radio("Sort Data", options=["Yes", "No"], horizontal=1, index=1)
-# if sort == "Yes":
-#     with top_menu[1]:
-#         sort_field = st.selectbox("Sort By", options=dataset.columns)
-#     with top_menu[2]:
-#         sort_direction = st.radio(
-#             "Direction", options=["⬆️", "⬇️"], horizontal=True
-#         )
-#     dataset = dataset.sort_values(
-#         by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True
-#     )
-# pagination = st.container()
+    dataset = pd.DataFrame(df_videos)
+    st.markdown(dataset.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 
-# bottom_menu = st.columns((4, 1, 1))
-# with bottom_menu[2]:
-#     batch_size = st.selectbox("Page Size", options=[10, 25, 50, 100])
-# with bottom_menu[1]:
-#     total_pages = (
-#         int(len(dataset) / batch_size) if int(len(dataset) / batch_size) > 0 else 1
-#     )
-#     current_page = st.number_input(
-#         "Page", min_value=1, max_value=total_pages, step=1
-#     )
-# with bottom_menu[0]:
-#     st.markdown(f"Page **{current_page}** of **{total_pages}** ")
-
-# pages = split_frame(dataset, batch_size)
-# pagination.table(data=pages[current_page - 1])
-# #pagination.dataframe(data=pages[current_page - 1], use_container_width=True)
 
 
 ###############
