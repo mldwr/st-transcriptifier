@@ -5,6 +5,8 @@ from pytube import YouTube
 from pytube import Channel
 import pandas as pd
 import scrapetube
+import requests
+import datetime
 
 def update_param():
     video_id = get_id_from_link(st.session_state.s_vid) 
@@ -89,33 +91,98 @@ if url:
 
 # PytubeError: Exception while accessing title of https://youtube.com/watch?v=bj9snrsSook. Please file a bug report at https://github.com/pytube/pytube
 
-yt = YouTube(get_link_from_id(url))
 
+
+########################
+# Load the data for a given video
+########################
+
+yt = YouTube(get_link_from_id(url))
 
 yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 #yt_img_markdown ="[![Image_with_Link]("+yt_img+")]("+url+")"
 yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
 yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
 
+
 data = {'Video':[yt_img_html_link],
         'Author': [yt.author],
         'Title': [yt.title],
-        'Published': [yt.publish_date],
+        'Published': [yt.publish_date.date()],
         'Views':[yt.views]}
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 st.write("")
 
 
+########################
+# Load Author Keywords, that are not viewable by users
+########################
+
 df = pd.DataFrame(yt.keywords, columns=['Authors Keywords'])
 st.write(df)
+
+
+
+########################
+# Display the transcript along with the download button
+########################
 
 with st.expander('Preview Transcript'):
     st.code(transcript_text, language=None)
 st.download_button('Download Transcript', transcript_text)
 
 ########################
+# API Call to deeppunkt-gr
+########################
+
+def get_punctuated_text(raw_text):
+    response = requests.post("https://wldmr-deeppunct-gr.hf.space/run/predict", json={
+        "data": [
+            raw_text,
+        ]})
+    #response_id = response
+    return response.json()
+
+
+st.subheader("Restore Punctuation in the Transcript")
+
+punkt_text = None
+if st.button('Load Punctuated Transcript'):
+    with st.spinner('Loading...'):
+        punkt_text = get_punctuated_text(transcript_text)
+    st.write('Load time: '+str(round(punkt_text['duration'],1))+' sec')
+    with st.expander('Preview Transcript'):
+        st.code(punkt_text['data'][0], language=None)
+
+########################
+# API Call to lexrank-gr
+########################
+
+def get_extracted_text(raw_text):
+    response = requests.post("https://wldmr-lexrank-gr.hf.space/run/predict", json={
+        "data": [
+            raw_text,
+        ]})
+    #response_id = response
+    return response.json()
+
+
+st.subheader("Extract the Main Sentences from Transcript")
+
+if st.button('Extract Sentences'):
+    if punkt_text is None:
+        with st.spinner('Loading...'):
+            punkt_text = get_punctuated_text(transcript_text)
+            extract_text = get_extracted_text(punkt_text)
+        st.write('Load time: '+str(round(extract_text['duration'],1))+' sec')
+        with st.expander('Preview Transcript'):
+            st.write(extract_text['data'][0], language=None)
+
+
+########################
 # Channel
+########################
 
 
 st.subheader("Other Videos of the Channel")
@@ -130,7 +197,8 @@ def split_frame(input_df, rows):
 if st.button('Load all Videos'):
     ytc = Channel(yt.channel_url)
 
-    videos = scrapetube.get_channel(yt.channel_id)
+    with st.spinner('Loading...'):
+        videos = scrapetube.get_channel(yt.channel_id)
 
     vids_thumbnails = []
     vids_videoIds = []
