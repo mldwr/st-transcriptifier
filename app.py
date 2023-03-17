@@ -144,7 +144,7 @@ def get_punctuated_text(raw_text):
     return response.json()
 
 
-st.subheader("Restore Punctuation in the Transcript")
+st.subheader("Restore Punctuation of Transcript")
 
 punkt_text = None
 if st.button('Load Punctuated Transcript'):
@@ -167,17 +167,50 @@ def get_extracted_text(raw_text):
     return response.json()
 
 
-st.subheader("Extract the Main Sentences from Transcript")
+st.subheader("Extract Core Sentences from Transcript")
 
 if st.button('Extract Sentences'):
     if punkt_text is None:
         with st.spinner('Loading...'):
             punkt_text = get_punctuated_text(transcript_text)
-            extract_text = get_extracted_text(punkt_text)
+            extract_text = get_extracted_text(punkt_text['data'][0])
         st.write('Load time: '+str(round(extract_text['duration'],1))+' sec')
+        data = {'Words':[int(extract_text['data'][1])],
+                'Sentences': [int(extract_text['data'][2])],
+                'Characters': [int(extract_text['data'][3])],
+                'Tokens':[int(extract_text['data'][4])]}
+        df = pd.DataFrame(data)
+        st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+        st.write("")
         with st.expander('Preview Transcript'):
-            st.write(extract_text['data'][0], language=None)
+            st.code(extract_text['data'][0], language=None)
 
+
+#######################
+# API Call to summarymachine
+########################
+
+def get_summarized_text(raw_text):
+    response = requests.post("https://wldmr-summarymachine.hf.space/run/predict", json={
+        "data": [
+            raw_text,
+        ]})
+    #response_id = response
+    return response.json()
+
+
+st.subheader("Summarize Extracted Sentences with Flan-T5")
+
+if st.button('Summarize Sentences'):
+    if punkt_text is None:
+        command = 'Summarize the transcript in one sentence:\n\n'
+        with st.spinner('Loading...'):
+            punkt_text = get_punctuated_text(transcript_text)
+            extract_text = get_extracted_text(punkt_text['data'][0])
+            summary_text = get_summarized_text(command+extract_text['data'][0])
+        st.write('Load time: '+str(round(summary_text['duration'],1))+' sec')
+        with st.expander('Preview Transcript'):
+            st.write(summary_text['data'][0], language=None)
 
 ########################
 # Channel
