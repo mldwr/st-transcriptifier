@@ -6,7 +6,6 @@ from pytube import Channel
 import pandas as pd
 import scrapetube
 import requests
-import datetime
 
 def update_param():
     video_id = get_id_from_link(st.session_state.s_vid) 
