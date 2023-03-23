@@ -111,7 +111,7 @@ try:
             'Published': [yt.publish_date.date()],
             'Views':[yt.views]}
 except exceptions.PytubeError:
-    raise "Error: This is some random error, please restart the application"
+    raise ValueError("This is some random error, please restart the application.")
 
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
