@@ -3,6 +3,7 @@ from youtube_transcript_api import NoTranscriptFound, TranscriptsDisabled
 import streamlit as st
 from pytube import YouTube
 from pytube import Channel
+from pytube import exceptions
 import pandas as pd
 import scrapetube
 import requests
@@ -88,8 +89,8 @@ if url:
 
     transcript_text = '\n'.join([i['text'].replace('\n',' ') for i in transcript_raw])
 
-# PytubeError: Exception while accessing title of https://youtube.com/watch?v=bj9snrsSook. Please file a bug report at https://github.com/pytube/pytube
-
+    if 'transcript' not in st.session_state:
+        st.session_state['transcript'] = transcript_text
 
 
 ########################
@@ -103,12 +104,15 @@ yt_img = f'http://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
 yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
 
+try:
+    data = {'Video':[yt_img_html_link],
+            'Author': [yt.author],
+            'Title': [yt.title],
+            'Published': [yt.publish_date.date()],
+            'Views':[yt.views]}
+except exceptions.PytubeError:
+    raise "Error: This is some random error, please restart the application"
 
-data = {'Video':[yt_img_html_link],
-        'Author': [yt.author],
-        'Title': [yt.title],
-        'Published': [yt.publish_date.date()],
-        'Views':[yt.views]}
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 st.write("")
@@ -128,8 +132,8 @@ st.write(df)
 ########################
 
 with st.expander('Preview Transcript'):
-    st.code(transcript_text, language=None)
-st.download_button('Download Transcript', transcript_text)
+    st.code(st.session_state.transcript, language=None)
+st.download_button('Download Transcript', st.session_state.transcript)
 
 ########################
 # API Call to deeppunkt-gr
@@ -138,21 +142,24 @@ st.download_button('Download Transcript', transcript_text)
 def get_punctuated_text(raw_text):
     response = requests.post("https://wldmr-deeppunct-gr.hf.space/run/predict", json={
         "data": [
+            ["sentences"],
             raw_text,
         ]})
     #response_id = response
-    return response.json()
+    if response.status_code != 200:
+        raise ValueError("The API replyed with an error, please try again: "+str(response.status_code))
+    st.session_state['punkt'] = response.json()
 
 
 st.subheader("Restore Punctuation of Transcript")
 
-punkt_text = None
 if st.button('Load Punctuated Transcript'):
-    with st.spinner('Loading...'):
-        punkt_text = get_punctuated_text(transcript_text)
-    st.write('Load time: '+str(round(punkt_text['duration'],1))+' sec')
+    with st.spinner('Loading Punctuation...'):
+        if 'punkt' not in st.session_state:
+            get_punctuated_text(st.session_state.transcript)
+    st.write('Load time: '+str(round(st.session_state.punkt['duration'],1))+' sec')
     with st.expander('Preview Transcript'):
-        st.code(punkt_text['data'][0], language=None)
+        st.code(st.session_state.punkt['data'][0], language=None)
 
 ########################
 # API Call to lexrank-gr
@@ -164,26 +171,30 @@ def get_extracted_text(raw_text):
             raw_text,
         ]})
     #response_id = response
-    return response.json()
+    st.session_state['extract'] = response.json()
 
 
+# TODO: Remove sentences that are smaller than 10 words long
+# Remove "um" words from text
 st.subheader("Extract Core Sentences from Transcript")
 
 if st.button('Extract Sentences'):
-    if punkt_text is None:
-        with st.spinner('Loading...'):
-            punkt_text = get_punctuated_text(transcript_text)
-            extract_text = get_extracted_text(punkt_text['data'][0])
-        st.write('Load time: '+str(round(extract_text['duration'],1))+' sec')
-        data = {'Words':[int(extract_text['data'][1])],
-                'Sentences': [int(extract_text['data'][2])],
-                'Characters': [int(extract_text['data'][3])],
-                'Tokens':[int(extract_text['data'][4])]}
-        df = pd.DataFrame(data)
-        st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
-        st.write("")
-        with st.expander('Preview Transcript'):
-            st.code(extract_text['data'][0], language=None)
+    with st.spinner('Loading Punctuation (Step 1/2)...'):
+        if 'punkt' not in st.session_state:
+            get_punctuated_text(st.session_state.transcript)
+    with st.spinner('Loading Extractions (Step 2/2)...'):
+        if 'extract' not in st.session_state:
+            get_extracted_text(st.session_state.punkt['data'][0])
+    st.write('Load time: '+str(round(st.session_state.extract['duration'],1))+' sec')
+    data = {'Words':[int(st.session_state.extract['data'][1])],
+            'Sentences': [int(st.session_state.extract['data'][2])],
+            'Characters': [int(st.session_state.extract['data'][3])],
+            'Tokens':[int(st.session_state.extract['data'][4])]}
+    df = pd.DataFrame(data)
+    st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+    st.write("")
+    with st.expander('Preview Transcript'):
+        st.code(st.session_state.extract['data'][0], language=None)
 
 
 #######################
@@ -196,21 +207,25 @@ def get_summarized_text(raw_text):
             raw_text,
         ]})
     #response_id = response
+    if response.status_code == 504:
+        raise "Error: Request took too long (>60sec), please try a shorter text."
     return response.json()
 
-
-st.subheader("Summarize Extracted Sentences with Flan-T5")
+st.subheader("Summarize Extracted Sentences with Flan-T5-large")
 
 if st.button('Summarize Sentences'):
-    if punkt_text is None:
-        command = 'Summarize the transcript in one sentence:\n\n'
-        with st.spinner('Loading...'):
-            punkt_text = get_punctuated_text(transcript_text)
-            extract_text = get_extracted_text(punkt_text['data'][0])
-            summary_text = get_summarized_text(command+extract_text['data'][0])
-        st.write('Load time: '+str(round(summary_text['duration'],1))+' sec')
-        with st.expander('Preview Transcript'):
-            st.write(summary_text['data'][0], language=None)
+    command = 'Summarize the transcript in one sentence:\n\n'
+    with st.spinner('Loading Punctuation (Step 1/3)...'):
+        if 'punkt' not in st.session_state:
+            get_punctuated_text(st.session_state.transcript)
+    with st.spinner('Loading Extraction (Step 2/3)...'):
+        if 'extract' not in st.session_state:
+            get_extracted_text(st.session_state.punkt['data'][0])
+    with st.spinner('Loading Summary (Step 3/3)...'):
+        summary_text = get_summarized_text(command+st.session_state.extract['data'][0])
+    st.write('Load time: '+str(round(summary_text['duration'],1))+' sec')
+    with st.expander('Preview Transcript'):
+        st.write(summary_text['data'][0], language=None)
 
 ########################
 # Channel
