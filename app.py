@@ -36,6 +36,9 @@ example_urls = [
     'https://www.youtube.com/watch?v=ReHGSGwV4-A', #wholesale ted
     'https://www.youtube.com/watch?v=n8JHnLgodRI', #kevindavid
     'https://www.youtube.com/watch?v=6MI0f6YjJIk', # Nicholas
+    'https://www.youtube.com/watch?v=nr4kmlTr9xw&list=WL&index=4', # Linus
+    'https://www.youtube.com/watch?v=64Izfm24FKA', # Yannic
+    'https://www.youtube.com/watch?v=Mt1P7p9HmkU', # Fogarty
     'https://www.youtube.com/watch?v=bj9snrsSook', #Geldschnurrbart
     'https://www.youtube.com/watch?v=0kJz0q0pvgQ&feature=youtu.be' # fcc
 ]
