@@ -40,13 +40,16 @@ example_urls = [
     'https://www.youtube.com/watch?v=64Izfm24FKA', # Yannic
     'https://www.youtube.com/watch?v=Mt1P7p9HmkU', # Fogarty
     'https://www.youtube.com/watch?v=bj9snrsSook', #Geldschnurrbart
-    'https://www.youtube.com/watch?v=0kJz0q0pvgQ&feature=youtu.be' # fcc
+    'https://www.youtube.com/watch?v=0kJz0q0pvgQ&feature=youtu.be', # fcc
+    'https://www.youtube.com/watch?v=yqkISICHH-U&t=10s',
+    'https://www.youtube.com/watch?v=uKyojQjbx4c',
+    'https://www.youtube.com/watch?v=3l16wCsDglU',
+    'https://www.youtube.com/watch?v=gNRGkMeITVU&list=WL&index=28', # iman
+    'https://www.youtube.com/watch?v=vAuQuL8dlXo&list=WL&index=30', #ghiorghiu
+    'https://www.youtube.com/watch?v=5scEDopRAi0&list=WL&index=29&t=71s', #infohaus
+    'https://www.youtube.com/watch?v=lCnHfTHkhbE' #fcc tutorial
 ]
 
-# https://www.youtube.com/watch?v=yqkISICHH-U&t=10s
-# https://www.youtube.com/watch?v=uKyojQjbx4c
-# https://www.youtube.com/watch?v=3l16wCsDglU
-# 'https://www.youtube.com/watch?v=lCnHfTHkhbE', #fcc tutorial
 
 # Initialization
 if 's_vid' not in st.session_state:
