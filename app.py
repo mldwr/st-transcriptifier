@@ -7,6 +7,7 @@ from pytube import exceptions
 import pandas as pd
 import scrapetube
 import requests
+import datetime 
 
 def update_param():
     video_id = get_id_from_link(st.session_state.s_vid) 
@@ -47,7 +48,8 @@ example_urls = [
     'https://www.youtube.com/watch?v=gNRGkMeITVU&list=WL&index=28', # iman
     'https://www.youtube.com/watch?v=vAuQuL8dlXo&list=WL&index=30', #ghiorghiu
     'https://www.youtube.com/watch?v=5scEDopRAi0&list=WL&index=29&t=71s', #infohaus
-    'https://www.youtube.com/watch?v=lCnHfTHkhbE' #fcc tutorial
+    'https://www.youtube.com/watch?v=lCnHfTHkhbE', #fcc tutorial
+    'https://www.youtube.com/watch?v=QI2okshNv_4'
 ]
 
 
@@ -95,8 +97,8 @@ if url:
 
     transcript_text = '\n'.join([i['text'].replace('\n',' ') for i in transcript_raw])
 
-    if 'transcript' not in st.session_state:
-        st.session_state['transcript'] = transcript_text
+    #if 'transcript' not in st.session_state:
+    #st.session_state['transcript'] = transcript_text
 
 
 ########################
@@ -114,10 +116,12 @@ try:
     data = {'Video':[yt_img_html_link],
             'Author': [yt.author],
             'Title': [yt.title],
-            'Published': [yt.publish_date.date()],
-            'Views':[yt.views]}
+            'Published': [yt.publish_date.strftime('%B %d, %Y')],
+            'Views':['{:,}'.format(yt.views).replace(',', '\'')],
+            'Length (min)':[int(yt.length/60)]}
 except exceptions.PytubeError:
-    raise ValueError("This is some random error, please restart the application.")
+    st.error('This is some random error, please restart the application.', icon="🚨")
+    st.stop()
 
 df = pd.DataFrame(data)
 st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
@@ -138,8 +142,8 @@ st.write(df)
 ########################
 
 with st.expander('Preview Transcript'):
-    st.code(st.session_state.transcript, language=None)
-st.download_button('Download Transcript', st.session_state.transcript)
+    st.code(transcript_text, language=None)
+st.download_button('Download Transcript', transcript_text)
 
 ########################
 # API Call to deeppunkt-gr
@@ -151,18 +155,22 @@ def get_punctuated_text(raw_text):
             ["sentences"],
             raw_text,
         ]})
-    #response_id = response
-    if response.status_code != 200:
-        raise ValueError("The API replyed with an error, please try again: "+str(response.status_code))
+    
+    if response.status_code == 504:
+        st.error('The API call took too long, the server answered with a timeout, please try again.', icon="🚨")
+        st.stop()
+    elif response.status_code != 200:
+        st.error('The API replyed with an error, please try again: '+str(response.status_code), icon="🚨")
+        st.stop()
     st.session_state['punkt'] = response.json()
 
 
-st.subheader("Restore Punctuation of Transcript")
+st.subheader("Restore Punctuations of Transcript")
 
 if st.button('Load Punctuated Transcript'):
     with st.spinner('Loading Punctuation...'):
         if 'punkt' not in st.session_state:
-            get_punctuated_text(st.session_state.transcript)
+            get_punctuated_text(transcript_text)
     st.write('Load time: '+str(round(st.session_state.punkt['duration'],1))+' sec')
     with st.expander('Preview Transcript'):
         st.code(st.session_state.punkt['data'][0], language=None)
@@ -187,7 +195,7 @@ st.subheader("Extract Core Sentences from Transcript")
 if st.button('Extract Sentences'):
     with st.spinner('Loading Punctuation (Step 1/2)...'):
         if 'punkt' not in st.session_state:
-            get_punctuated_text(st.session_state.transcript)
+            get_punctuated_text(transcript_text)
     with st.spinner('Loading Extractions (Step 2/2)...'):
         if 'extract' not in st.session_state:
             get_extracted_text(st.session_state.punkt['data'][0])
@@ -223,7 +231,7 @@ if st.button('Summarize Sentences'):
     command = 'Summarize the transcript in one sentence:\n\n'
     with st.spinner('Loading Punctuation (Step 1/3)...'):
         if 'punkt' not in st.session_state:
-            get_punctuated_text(st.session_state.transcript)
+            get_punctuated_text(transcript_text)
     with st.spinner('Loading Extraction (Step 2/3)...'):
         if 'extract' not in st.session_state:
             get_extracted_text(st.session_state.punkt['data'][0])
@@ -261,10 +269,11 @@ if st.button('Load all Videos'):
     vids_views= []
     for video in videos:
         vids_video_id = video['videoId']
-        
+        vids_url = 'https://www.youtube.com/watch?v='+vids_video_id
+
         yt_img = f'http://img.youtube.com/vi/{vids_video_id}/mqdefault.jpg'
         yt_img_html = '<img src='+yt_img+' width="250" height="150" />'
-        yt_img_html_link = '<a href='+url+'>'+yt_img_html+'</a>'
+        yt_img_html_link = '<a href='+vids_url+'>'+yt_img_html+'</a>'
         vids_thumbnails.append(yt_img_html_link)
         
         vids_video_id_link = '<a target="_self" href="/?vid='+vids_video_id+'">'+vids_video_id+'</a>'
