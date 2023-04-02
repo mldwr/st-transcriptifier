@@ -7,7 +7,6 @@ from pytube import exceptions
 import pandas as pd
 import scrapetube
 import requests
-import datetime 
 
 def update_param():
     video_id = get_id_from_link(st.session_state.s_vid) 
@@ -42,9 +41,6 @@ example_urls = [
     'https://www.youtube.com/watch?v=Mt1P7p9HmkU', # Fogarty
     'https://www.youtube.com/watch?v=bj9snrsSook', #Geldschnurrbart
     'https://www.youtube.com/watch?v=0kJz0q0pvgQ&feature=youtu.be', # fcc
-    'https://www.youtube.com/watch?v=yqkISICHH-U&t=10s',
-    'https://www.youtube.com/watch?v=uKyojQjbx4c',
-    'https://www.youtube.com/watch?v=3l16wCsDglU',
     'https://www.youtube.com/watch?v=gNRGkMeITVU&list=WL&index=28', # iman
     'https://www.youtube.com/watch?v=vAuQuL8dlXo&list=WL&index=30', #ghiorghiu
     'https://www.youtube.com/watch?v=5scEDopRAi0&list=WL&index=29&t=71s', #infohaus
@@ -172,6 +168,13 @@ if st.button('Load Punctuated Transcript'):
         if 'punkt' not in st.session_state:
             get_punctuated_text(transcript_text)
     st.write('Load time: '+str(round(st.session_state.punkt['duration'],1))+' sec')
+    data = {'Words':[int(st.session_state.punkt['data'][1])],
+            'Sentences': [int(st.session_state.punkt['data'][2])],
+            'Characters': [int(st.session_state.punkt['data'][3])],
+            'Tokens':[int(st.session_state.punkt['data'][4])]}
+    df = pd.DataFrame(data)
+    st.markdown(df.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+    st.write("")
     with st.expander('Preview Transcript'):
         st.code(st.session_state.punkt['data'][0], language=None)
 
@@ -188,8 +191,6 @@ def get_extracted_text(raw_text):
     st.session_state['extract'] = response.json()
 
 
-# TODO: Remove sentences that are smaller than 10 words long
-# Remove "um" words from text
 st.subheader("Extract Core Sentences from Transcript")
 
 if st.button('Extract Sentences'):
