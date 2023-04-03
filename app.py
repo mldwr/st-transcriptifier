@@ -8,9 +8,21 @@ import pandas as pd
 import scrapetube
 import requests
 
-def update_param():
+def reset_session():
+    if 'punkt' in st.session_state:
+        del st.session_state.punkt
+    if 'extract' in st.session_state:
+        del st.session_state.extract
+
+def update_param_textinput():
+    video_id = get_id_from_link(st.session_state.ti_vid) 
+    st.experimental_set_query_params(vid=video_id)
+    reset_session()
+
+def update_param_example():
     video_id = get_id_from_link(st.session_state.s_vid) 
     st.experimental_set_query_params(vid=video_id)
+    reset_session()
 
 def get_link_from_id(video_id):
     if "v=" not in video_id:
@@ -71,8 +83,8 @@ if vid_param and vid_param != st.session_state.s_vid:
     if pa_url not in example_urls:
         example_urls.append(pa_url)
 
-select_examples = st.selectbox(label="Choose an example",options=example_urls, key='s_vid', on_change=update_param)
-url = st.text_input("Enter the YouTube video URL:", value=pa_url if pa_url else select_examples)
+select_examples = st.selectbox(label="Choose an example",options=example_urls, key='s_vid', on_change=update_param_example)
+url = st.text_input("Enter the YouTube video URL:", value=pa_url if pa_url else select_examples, key='ti_vid', on_change=update_param_textinput)
 
 
 if url:
