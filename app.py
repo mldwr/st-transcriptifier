@@ -14,14 +14,16 @@ def reset_session():
     if 'extract' in st.session_state:
         del st.session_state.extract
 
-def update_param_textinput():
-    video_id = get_id_from_link(st.session_state.ti_vid) 
-    st.experimental_set_query_params(vid=video_id)
+def update_param_example():
+    st.session_state.s_vid = st.session_state.ex_vid
+    #video_id = get_id_from_link(st.session_state.ex_vid) 
+    #st.experimental_set_query_params(vid=video_id)
     reset_session()
 
-def update_param_example():
-    video_id = get_id_from_link(st.session_state.s_vid) 
-    st.experimental_set_query_params(vid=video_id)
+def update_param_textinput():
+    st.session_state.s_vid = st.session_state.ti_vid
+    #video_id = get_id_from_link(st.session_state.ti_vid) 
+    #st.experimental_set_query_params(vid=video_id)
     reset_session()
 
 def get_link_from_id(video_id):
@@ -65,25 +67,26 @@ example_urls = [
 if 's_vid' not in st.session_state:
     st.session_state.s_vid = ''
 
-vid_param = st.experimental_get_query_params().get("vid")
+#vid_param = st.experimental_get_query_params().get("vid")
 
-if st.session_state.s_vid:
-    se_vid = get_id_from_link(st.session_state.s_vid) 
+#if st.session_state.s_vid:
+#    se_vid = get_id_from_link(st.session_state.s_vid) 
 
-if vid_param:
-    pa_vid = get_id_from_link("".join(vid_param)) 
+#if vid_param:
+#    pa_vid = get_id_from_link("".join(vid_param)) 
 
-if vid_param == None:
-    st.session_state.s_vid = example_urls[0]
+#if vid_param == None:
+#    st.session_state.s_vid = example_urls[0]
     
-pa_url=None
-if vid_param and vid_param != st.session_state.s_vid:
-    pa_url = get_link_from_id("".join(vid_param))
-    st.session_state.s_vid = pa_url
-    if pa_url not in example_urls:
-        example_urls.append(pa_url)
+#pa_url=None
+#if vid_param and vid_param != st.session_state.s_vid:
+#    pa_url = get_link_from_id("".join(vid_param))
+#    st.session_state.s_vid = pa_url
+#    if pa_url not in example_urls:
+#        example_urls.append(pa_url)
 
-select_examples = st.selectbox(label="Choose an example",options=example_urls, key='s_vid', on_change=update_param_example)
+pa_url = st.session_state.s_vid
+select_examples = st.selectbox(label="Choose an example",options=example_urls, key='ex_vid', on_change=update_param_example)
 url = st.text_input("Enter the YouTube video URL:", value=pa_url if pa_url else select_examples, key='ti_vid', on_change=update_param_textinput)
 
 
